@@ -1,0 +1,17 @@
+[project]
+name = "dev-box"
+version = "0.1.0"
+description = "EC2 dev box."
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = []
+
+[dependency-groups]
+dev = [
+  "black>=25.1.0",
+  "pylint>=3.3.7",
+  "pytest>=8.4.0",
+]
+
+[tool.uv]
+package = false
