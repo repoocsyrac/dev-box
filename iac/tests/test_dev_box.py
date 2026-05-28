@@ -1,3 +1,5 @@
+"""Tests for the dev box infrastructure."""
+
 from aws_cdk import App, Stack
 from aws_cdk.assertions import Match, Template
 
@@ -5,6 +7,8 @@ from iac.constructs.isolated_ec2 import IsolatedEc2
 
 
 def test_isolated_ec2_synthesizes_expected_resources() -> None:
+	"""The construct should synthesize a private Ubuntu instance with SSM access."""
+
 	app = App()
 	stack = Stack(app, "TestStack")
 
@@ -12,6 +16,9 @@ def test_isolated_ec2_synthesizes_expected_resources() -> None:
 
 	template = Template.from_stack(stack)
 
+	template.resource_count_is("AWS::EC2::VPC", 1)
+	template.resource_count_is("AWS::EC2::Subnet", 1)
+	template.resource_count_is("AWS::EC2::NatGateway", 1)
 	template.resource_count_is("AWS::EC2::Instance", 1)
 	template.resource_count_is("AWS::EC2::SecurityGroup", 1)
 	template.resource_count_is("AWS::IAM::Role", 1)
@@ -25,6 +32,7 @@ def test_isolated_ec2_synthesizes_expected_resources() -> None:
 			),
 		},
 	)
+
 	template.has_resource_properties(
 		"AWS::EC2::Instance",
 		{

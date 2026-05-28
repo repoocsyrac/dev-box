@@ -1,3 +1,4 @@
+"""CDK application entry point for the dev box stack."""
 
 import os
 
@@ -6,6 +7,8 @@ from iac.stacks.dev_box import DevBox
 
 
 def main() -> None:
+	"""Synthesize the CDK app."""
+
 	app = cdk.App()
 
 	env = cdk.Environment(

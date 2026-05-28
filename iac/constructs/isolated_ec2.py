@@ -1,14 +1,32 @@
+"""Reusable construct for a private, SSM-managed EC2 dev box."""
+
 from aws_cdk import aws_ec2, aws_iam
 from constructs import Construct
 
 
 class IsolatedEc2(Construct):
+    """Provision a private Ubuntu EC2 instance with SSM and developer tools."""
+
     def __init__(self, scope: Construct, construct_id: str, instance_name: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
+
+        vpc = aws_ec2.Vpc(
+            self,
+            "DevBoxVpc",
+            max_azs=2,
+            nat_gateways=1,
+            subnet_configuration=[
+                aws_ec2.SubnetConfiguration(
+                    name="Private",
+                    subnet_type=aws_ec2.SubnetType.PRIVATE_WITH_EGRESS,
+                )
+            ],
+        )
 
         security_group = aws_ec2.SecurityGroup(
             self,
             "DevBoxSecurityGroup",
+            vpc=vpc,
             allow_all_outbound=True,
             security_group_name="DevBoxSecurityGroup",
         )
@@ -38,6 +56,7 @@ class IsolatedEc2(Construct):
         self.ec2 = aws_ec2.Instance(
             self,
             "DevBoxInstance",
+            vpc=vpc,
             block_devices=[
                 aws_ec2.BlockDevice(
                     device_name="/dev/sda1",

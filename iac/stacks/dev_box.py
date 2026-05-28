@@ -1,11 +1,16 @@
-from aws_cdk import Stack, aws_ec2
+"""Stack definition for the dev box infrastructure."""
+
+from aws_cdk import Stack
 from constructs import Construct
 
 from iac.constructs.isolated_ec2 import IsolatedEc2
 
+
 class DevBox(Stack):
-    def __init__(self, scope: Construct, id: str, instance_name: str, **kwargs) -> None:
-        super().__init__(scope, id, **kwargs)
+    """Top-level stack that provisions the dev box construct."""
+
+    def __init__(self, scope: Construct, stack_id: str, instance_name: str, **kwargs) -> None:
+        super().__init__(scope, stack_id, **kwargs)
 
         IsolatedEc2(
             self,
