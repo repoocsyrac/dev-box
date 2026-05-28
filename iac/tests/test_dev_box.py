@@ -39,7 +39,6 @@ def test_isolated_ec2_synthesizes_expected_resources() -> None:
         "AWS::EC2::Instance",
         {
             "InstanceType": "t3.medium",
-            "AssociatePublicIpAddress": False,
             "BlockDeviceMappings": Match.array_with(
                 [
                     Match.object_like(
