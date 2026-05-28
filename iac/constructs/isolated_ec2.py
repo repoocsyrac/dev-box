@@ -1,6 +1,7 @@
 """Reusable construct for a private, SSM-managed EC2 dev box."""
 
-from aws_cdk import aws_ec2, aws_iam
+import aws_cdk as cdk
+from aws_cdk import aws_ec2, aws_iam, aws_lambda, aws_events, aws_events_targets
 from constructs import Construct
 
 
@@ -8,7 +9,15 @@ class IsolatedEc2(Construct):
     """Provision a private Ubuntu EC2 instance with SSM and developer tools."""
 
     def __init__(
-        self, scope: Construct, construct_id: str, instance_name: str, **kwargs
+        self,
+        scope: Construct,
+        construct_id: str,
+        instance_name: str,
+        *,
+        instance_type: str = "t3.medium",
+        root_volume_size: int = 30,
+        root_volume_type: str = "gp3",
+        **kwargs,
     ) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
@@ -27,6 +36,19 @@ class IsolatedEc2(Construct):
                     subnet_type=aws_ec2.SubnetType.PRIVATE_WITH_EGRESS,
                 ),
             ],
+        )
+
+        # Add SSM Interface VPC endpoints so instance can reach SSM without NAT
+        vpc.add_interface_endpoint(
+            "SSMEndpoint", service=aws_ec2.InterfaceVpcEndpointAwsService.SSM
+        )
+        vpc.add_interface_endpoint(
+            "SSMMessagesEndpoint",
+            service=aws_ec2.InterfaceVpcEndpointAwsService.SSM_MESSAGES,
+        )
+        vpc.add_interface_endpoint(
+            "EC2MessagesEndpoint",
+            service=aws_ec2.InterfaceVpcEndpointAwsService.EC2_MESSAGES,
         )
 
         security_group = aws_ec2.SecurityGroup(
@@ -48,6 +70,7 @@ class IsolatedEc2(Construct):
             )
         )
 
+        # Prefer AMI-provided SSM agent; only install Docker and essentials
         user_data = aws_ec2.UserData.for_linux()
         user_data.add_commands(
             "apt-get update -y",
@@ -55,9 +78,6 @@ class IsolatedEc2(Construct):
             "systemctl enable docker",
             "systemctl start docker",
             "usermod -aG docker ubuntu",
-            "snap install amazon-ssm-agent --classic || true",
-            "systemctl enable snap.amazon-ssm-agent.amazon-ssm-agent.service || true",
-            "systemctl restart snap.amazon-ssm-agent.amazon-ssm-agent.service || true",
             "curl -LsSf https://astral.sh/uv/install.sh | sh",
         )
 
@@ -68,10 +88,12 @@ class IsolatedEc2(Construct):
             block_devices=[
                 aws_ec2.BlockDevice(
                     device_name="/dev/sda1",
-                    volume=aws_ec2.BlockDeviceVolume.ebs(30),
+                    volume=aws_ec2.BlockDeviceVolume.ebs(
+                        root_volume_size, volume_type=root_volume_type
+                    ),
                 )
             ],
-            instance_type=aws_ec2.InstanceType("t3.medium"),
+            instance_type=aws_ec2.InstanceType(instance_type),
             machine_image=aws_ec2.MachineImage.lookup(
                 name="ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*",
                 owners=["099720109477"],
@@ -83,3 +105,6 @@ class IsolatedEc2(Construct):
             ssm_session_permissions=True,
             user_data=user_data,
         )
+
+        # Tag instance for autoschedule
+        cdk.Tags.of(self.ec2).add("devbox:auto-schedule", "true")
