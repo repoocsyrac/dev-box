@@ -17,9 +17,13 @@ class IsolatedEc2(Construct):
             nat_gateways=1,
             subnet_configuration=[
                 aws_ec2.SubnetConfiguration(
+                    name="Public",
+                    subnet_type=aws_ec2.SubnetType.PUBLIC,
+                ),
+                aws_ec2.SubnetConfiguration(
                     name="Private",
                     subnet_type=aws_ec2.SubnetType.PRIVATE_WITH_EGRESS,
-                )
+                ),
             ],
         )
 
