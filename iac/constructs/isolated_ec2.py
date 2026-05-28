@@ -7,7 +7,9 @@ from constructs import Construct
 class IsolatedEc2(Construct):
     """Provision a private Ubuntu EC2 instance with SSM and developer tools."""
 
-    def __init__(self, scope: Construct, construct_id: str, instance_name: str, **kwargs) -> None:
+    def __init__(
+        self, scope: Construct, construct_id: str, instance_name: str, **kwargs
+    ) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
         vpc = aws_ec2.Vpc(
@@ -41,7 +43,9 @@ class IsolatedEc2(Construct):
             assumed_by=aws_iam.ServicePrincipal("ec2.amazonaws.com"),
         )
         role.add_managed_policy(
-            aws_iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSSMManagedInstanceCore")
+            aws_iam.ManagedPolicy.from_aws_managed_policy_name(
+                "AmazonSSMManagedInstanceCore"
+            )
         )
 
         user_data = aws_ec2.UserData.for_linux()

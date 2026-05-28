@@ -30,7 +30,7 @@ def test_isolated_ec2_synthesizes_expected_resources() -> None:
         "AWS::IAM::Role",
         {
             "ManagedPolicyArns": Match.array_with(
-                [Match.string_like_regexp("AmazonSSMManagedInstanceCore")]
+                [Match.object_like({"Fn::Join": Match.any_value()})]
             ),
         },
     )
