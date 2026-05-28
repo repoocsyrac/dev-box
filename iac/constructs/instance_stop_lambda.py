@@ -1,7 +1,7 @@
 """Lambda to auto-stop EC2 instances."""
 
 import aws_cdk as cdk
-from aws_cdk import aws_ec2, aws_iam, aws_lambda, aws_events, aws_events_targets
+from aws_cdk import aws_iam, aws_lambda, aws_events, aws_events_targets
 from constructs import Construct
 
 
