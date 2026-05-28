@@ -1,6 +1,6 @@
 """Tests for the dev box infrastructure."""
 
-from aws_cdk import App, Stack
+from aws_cdk import App, Stack, Environment
 from aws_cdk.assertions import Match, Template
 
 from iac.constructs.isolated_ec2 import IsolatedEc2
@@ -10,7 +10,11 @@ def test_isolated_ec2_synthesizes_expected_resources() -> None:
     """The construct should synthesize a private Ubuntu instance with SSM access."""
 
     app = App()
-    stack = Stack(app, "TestStack")
+    stack = Stack(
+        app,
+        "TestStack",
+        env=Environment(account="000000000000", region="eu-west-2"),
+    )
 
     IsolatedEc2(stack, "DevBox", instance_name="dev-box-instance")
 
