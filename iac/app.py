@@ -3,30 +3,31 @@
 import os
 
 import aws_cdk as cdk
+
 from iac.stacks.dev_box import DevBox
 
 
 def main() -> None:
-	"""Synthesize the CDK app."""
+    """Synthesize the CDK app."""
 
-	app = cdk.App()
+    app = cdk.App()
 
-	env = cdk.Environment(
-		account=os.getenv("CDK_DEFAULT_ACCOUNT"),
-		region=os.getenv("CDK_DEFAULT_REGION"),
-	)
+    env = cdk.Environment(
+        account=os.getenv("CDK_DEFAULT_ACCOUNT"),
+        region=os.getenv("CDK_DEFAULT_REGION"),
+    )
 
-	instance_name = app.node.try_get_context("INSTANCE_NAME") or "dev-box-instance"
+    instance_name = app.node.try_get_context("INSTANCE_NAME") or "dev-box-instance"
 
-	DevBox(
-		app,
-		"DevBox",
-		instance_name=instance_name,
-		env=env,
-	)
+    DevBox(
+        app,
+        "DevBox",
+        instance_name=instance_name,
+        env=env,
+    )
 
-	app.synth()
+    app.synth()
 
 
 if __name__ == "__main__":
-	main()
+    main()

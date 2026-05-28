@@ -64,8 +64,9 @@ class IsolatedEc2(Construct):
                 )
             ],
             instance_type=aws_ec2.InstanceType("t3.medium"),
-            machine_image=aws_ec2.MachineImage.latest_ubuntu(
-                aws_ec2.UbuntuVersion.V22_04_LTS
+            machine_image=aws_ec2.MachineImage.lookup(
+                name="ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*",
+                owners=["099720109477"],
             ),
             associate_public_ip_address=False,
             instance_name=instance_name,
