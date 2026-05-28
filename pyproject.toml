@@ -4,7 +4,10 @@ version = "0.1.0"
 description = "EC2 dev box."
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+  "aws-cdk-lib>=2.180.0",
+  "constructs>=10.4.2",
+]
 
 [dependency-groups]
 dev = [
