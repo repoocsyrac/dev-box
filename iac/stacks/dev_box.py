@@ -4,6 +4,7 @@ from aws_cdk import Stack
 from constructs import Construct
 
 from iac.constructs.isolated_ec2 import IsolatedEc2
+from iac.constructs.instance_stop_lambda import InstanceStopLambda
 
 
 class DevBox(Stack):
@@ -18,4 +19,9 @@ class DevBox(Stack):
             self,
             "DevBox",
             instance_name=instance_name,
+        )
+
+        InstanceStopLambda(
+            self,
+            "DevBoxStopLambda",
         )
