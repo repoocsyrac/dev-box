@@ -1,0 +1,33 @@
+from aws_cdk import App, Stack
+from aws_cdk.assertions import Match, Template
+
+from iac.constructs.isolated_ec2 import IsolatedEc2
+
+
+def test_isolated_ec2_synthesizes_expected_resources() -> None:
+	app = App()
+	stack = Stack(app, "TestStack")
+
+	IsolatedEc2(stack, "DevBox", instance_name="dev-box-instance")
+
+	template = Template.from_stack(stack)
+
+	template.resource_count_is("AWS::EC2::Instance", 1)
+	template.resource_count_is("AWS::EC2::SecurityGroup", 1)
+	template.resource_count_is("AWS::IAM::Role", 1)
+	template.has_resource_properties(
+		"AWS::EC2::Instance",
+		{
+			"InstanceType": "t3.medium",
+			"Tags": Match.array_with(
+				[
+					Match.object_like(
+						{
+							"Key": "Name",
+							"Value": "dev-box-instance",
+						}
+					)
+				]
+			),
+		},
+	)
