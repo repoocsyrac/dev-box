@@ -1,5 +1,6 @@
 
 import os
+from platform import node
 
 import aws_cdk as cdk
 from iac.stacks.dev_box import DevBox
@@ -13,7 +14,14 @@ def main() -> None:
 		region=os.getenv("CDK_DEFAULT_REGION"),
 	)
 
-	DevBox(app, "DevBox", env=env)
+	INSTANCE_NAME = node.try_get_context("INSTANCE_NAME") or "dev-box-instance"
+
+	DevBox(
+		app,
+		"DevBox",
+		instance_name=INSTANCE_NAME,
+		env=env
+	)
 
 	app.synth()
 
