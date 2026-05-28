@@ -18,22 +18,37 @@ class IsolatedEc2(Construct):
             "DevBoxRole",
             assumed_by=aws_iam.ServicePrincipal("ec2.amazonaws.com"),
         )
+        role.add_managed_policy(
+            aws_iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSSMManagedInstanceCore")
+        )
 
         user_data = aws_ec2.UserData.for_linux()
         user_data.add_commands(
-            "yum update -y",
-            "yum install -y git",
-            "yum install -y docker",
-            "service docker start",
-            "usermod -a -G docker ec2-user",
+            "apt-get update -y",
+            "apt-get install -y git docker.io unzip curl",
+            "systemctl enable docker",
+            "systemctl start docker",
+            "usermod -aG docker ubuntu",
+            "snap install amazon-ssm-agent --classic || true",
+            "systemctl enable snap.amazon-ssm-agent.amazon-ssm-agent.service || true",
+            "systemctl restart snap.amazon-ssm-agent.amazon-ssm-agent.service || true",
+            "curl -LsSf https://astral.sh/uv/install.sh | sh",
         )
 
         self.ec2 = aws_ec2.Instance(
             self,
             "DevBoxInstance",
+            block_devices=[
+                aws_ec2.BlockDevice(
+                    device_name="/dev/sda1",
+                    volume=aws_ec2.BlockDeviceVolume.ebs(30),
+                )
+            ],
             instance_type=aws_ec2.InstanceType("t3.medium"),
-            machine_image=aws_ec2.MachineImage.latest_amazon_linux(),
-            associate_public_ip_address=True,
+            machine_image=aws_ec2.MachineImage.latest_ubuntu(
+                aws_ec2.UbuntuVersion.V22_04_LTS
+            ),
+            associate_public_ip_address=False,
             instance_name=instance_name,
             role=role,
             security_group=security_group,

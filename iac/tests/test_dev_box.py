@@ -16,9 +16,30 @@ def test_isolated_ec2_synthesizes_expected_resources() -> None:
 	template.resource_count_is("AWS::EC2::SecurityGroup", 1)
 	template.resource_count_is("AWS::IAM::Role", 1)
 	template.has_resource_properties(
+		"AWS::IAM::Role",
+		{
+			"ManagedPolicyArns": Match.array_with(
+				[
+					Match.string_like_regexp("AmazonSSMManagedInstanceCore")
+				]
+			),
+		},
+	)
+	template.has_resource_properties(
 		"AWS::EC2::Instance",
 		{
 			"InstanceType": "t3.medium",
+			"AssociatePublicIpAddress": False,
+			"BlockDeviceMappings": Match.array_with(
+				[
+					Match.object_like(
+						{
+							"DeviceName": "/dev/sda1",
+							"Ebs": Match.object_like({"VolumeSize": 30}),
+						}
+					)
+				]
+			),
 			"Tags": Match.array_with(
 				[
 					Match.object_like(
